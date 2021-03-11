@@ -39,22 +39,22 @@ userController.deleteUser = function (req, res, next) {
 };
 
 // create a deck
-userController.createDeck = function (req, res) {
-  // User.findOneAndUpdate(
-  //   { userName: req.params.user },
-  //   { $push: { decks: { topic: req.body.topic, cards: {} } } },
-  //   { new: true },
-  //   (err, doc) => {
-  //     if (err) {
-  //       console.log('error adding deck!');
-  //       return res.status(400).json(err);
-  //     } else {
-  //       console.log('deck created!');
-  //       console.log(doc);
-  //       return res.status(200).json(doc);
-  //     }
-  //   }
-  // );
+userController.createDeck = (req, res, next) => {
+  console.log(req.body)
+
+  const newDeck = [req.body.name];
+
+    const insertQuery = `INSERT into public_deck (name) VALUES ($1)`
+
+    db.query(insertQuery, newDeck, (err, result) => {
+      console.log()
+      if (err) {
+        return next({
+          log: 'No deck created',
+          message: {err: err,}
+        })
+      }
+    })
 };
 
 // find all the decks
@@ -63,18 +63,43 @@ userController.displayAllDecks = (req, res, next) => {
 
   const query = 'SELECT name FROM public_deck';
 
-  db.query(query)
-    .then(response => {
-      console.log(response.rows);
-      res.locals.decks = response.rows;
-      return next();
-    }).catch((err) => {
-      console.log('Error finding decks', err);
+
+  db.query(query, (err, result) => {
+    if (err) {
       return next({
-        log: 'userController finding decks failed',
-        message: { err: 'getting decks from database failed' },
+        log: 'userController.display all decks failed',
+        message: {
+          err: 'this decks do not exist',
+        },
       });
-    });
+    };
+    if (result.rows.length === 0) { 
+      return next({
+        log: 'no decks',
+      });
+    }
+    console.log(result.rows);
+    res.locals.decks = result.rows;
+    return next();
+  });
+
+
+
+  // db.query(query)
+  //   .then(response => {
+      
+  //     console.log(response.rows);
+  //     res.locals.decks = response.rows;
+  //     return next();
+  //   }).catch((err) => {
+  //     console.log('Error finding decks', err);
+  //     return next({
+  //       log: 'userController finding decks failed',
+  //       message: { err: 'getting decks from database failed' },
+  //     });
+  //   });
+
+
 };
 
 
@@ -194,3 +219,4 @@ userController.deleteCard = function (req, res) {
 };
 
 module.exports = userController;
+

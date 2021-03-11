@@ -69,22 +69,23 @@ class NavBar extends Component {
       .then((data) => {
         console.log('fetched data: ', data);
         const userDecks = [];
-        const userInventory = [];
-        for (let i = 0; i < data[0].decks.length; i += 1) {
-          userDecks.push(data[0].decks[i].topic);
-          userInventory.push(data[0].decks[i]);
-        }
-        console.log('all the decks ', userDecks);
-        console.log('all the decks and cards ', userInventory);
+        for (let i = 0; i < data.length; i += 1) {
+          userDecks.push(data[i].name);
+        };
+         console.log('all the decks ', userDecks);
+        // console.log('all the decks and cards ', userInventory);
         // not updating username state since it's hardcoded
 
 
         // hardcoding the art deck for ryan to work on stuff
-        const tempCards = data[0].decks[0].cards
-        console.log('testing the cards: ', tempCards)
+        // const tempCards = data[0].decks[0].cards
+        // console.log('testing the cards: ', tempCards)
         // console.log('getting the id? :', data[0].decks[0].cards[cards.length-1])
 
-        this.setState({ decks: userDecks, allDecksCards: userInventory, mathCards: tempCards});
+        this.setState({ 
+          ...this.state,
+          decks: userDecks, 
+        });
       });
   }
 
@@ -144,6 +145,8 @@ class NavBar extends Component {
 
   addDeck(event) {
     const userInput = document.getElementById('createDeck').value;
+    
+
     // console.log('selected: ', userInput)
     // edit to add a form where the user can input data
     console.log('ADD DECK BUTTON CLICKED');
@@ -151,28 +154,31 @@ class NavBar extends Component {
 
     // const selectedTopic = event.target.attributes.topic.nodeValue;
     console.log('decks before added: ', this.state.decks);
-
+    
     fetch(`/api/${this.state.username}/createDeck`, {
       method: 'PATCH',
       // need to update "deck" in fetch request based on the ID in line below
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ topic: userInput, cards: {} }),
+      body: JSON.stringify({ name: event.target[0].value }),
     })
+
+    fetch(`/api/${this.state.username}/deck/all`)
+    // fetch(`/api`)
       .then((data) => data.json())
       .then((data) => {
-        console.log('data after add!!!!: ', data);
-        console.log('data decks after add: ', data.decks);
-        const updatedDecks = [];
-        for (let i = 0; i < data.decks.length; i += 1) {
-            updatedDecks.push(data.decks[i].topic);
-        }
-        console.log('decks after add: ', updatedDecks);
-
-
-        this.setState({ decks: updatedDecks });
+        console.log('fetched data: ', data);
+        const userDecks = [];
+        for (let i = 0; i < data.length; i += 1) {
+          userDecks.push(data[i].name);
+        };
+        this.setState({ 
+          ...this.state,
+          decks: userDecks, 
+        });
       });
-
   }
+
+  
 
   // EDITDECK MIDDLEWARE HAS NOT BEEN COMPLETED
   editDeck(event) {
